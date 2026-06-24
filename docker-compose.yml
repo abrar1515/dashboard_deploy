@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: click_shop
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: click_shop
+      DB_SYNC: 'true'
+      JWT_SECRET: 'eshop-secret'
+      JWT_EXPIRES_IN: '7d'
+      ADMIN_EMAIL: 'admin@click-shop.com'
+      ADMIN_PASSWORD: 'admin123'
+    ports:
+      - '4000:4000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+volumes:
+  db_data:

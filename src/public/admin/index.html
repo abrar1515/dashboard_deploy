@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Click Shop Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <div>
+            <div class="brand-title">Click Shop Admin</div>
+            <div class="brand-subtitle">Operations, catalog, and orders</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span id="admin-user" class="muted"></span>
+          <button id="logout-btn" class="btn ghost">Logout</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="login-panel" class="panel">
+          <div class="card login-card">
+            <div class="card-header">
+              <h1>Sign in</h1>
+              <p>Use your admin email and password.</p>
+            </div>
+            <form id="login-form" class="form">
+              <label>
+                Email
+                <input type="email" name="identifier" required placeholder="admin@click-shop.com" />
+              </label>
+              <label>
+                Password
+                <input type="password" name="password" required placeholder="••••••••" />
+              </label>
+              <button type="submit" class="btn primary">Sign in</button>
+              <div class="form-hint">Admin access only.</div>
+            </form>
+          </div>
+        </section>
+
+        <section id="admin-panel" class="panel hidden">
+          <div class="admin-layout">
+            <aside class="sidebar">
+              <div class="sidebar-header">
+                <div class="sidebar-title">Workspace</div>
+                <div class="sidebar-subtitle">Quick access</div>
+              </div>
+              <nav class="sidebar-nav">
+                <button class="tab-btn active" data-tab="products">
+                  Products
+                  <span class="tab-meta">Manage catalog</span>
+                </button>
+                <button class="tab-btn" data-tab="categories">
+                  Categories
+                  <span class="tab-meta">Collections & images</span>
+                </button>
+                <button class="tab-btn" data-tab="orders">
+                  Orders
+                  <span class="tab-meta">Status updates</span>
+                </button>
+                <button class="tab-btn" data-tab="users">
+                  Users
+                  <span class="tab-meta">Roles & access</span>
+                </button>
+              </nav>
+              <div class="sidebar-footer">
+                <div class="muted">Logged in as</div>
+                <div id="sidebar-user" class="sidebar-user">—</div>
+              </div>
+            </aside>
+
+            <div class="content">
+              <div class="summary-grid">
+                <div class="stat-card">
+                  <div class="stat-label">Products</div>
+                  <div class="stat-value" id="stat-products">0</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">Categories</div>
+                  <div class="stat-value" id="stat-categories">0</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">Orders</div>
+                  <div class="stat-value" id="stat-orders">0</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">Users</div>
+                  <div class="stat-value" id="stat-users">0</div>
+                </div>
+              </div>
+
+              <div id="tab-products" class="tab-panel active">
+                <div class="panel-grid">
+                  <div class="card">
+                    <div class="card-header">
+                      <h2>Product editor</h2>
+                      <p>Create or update products with price tags and images.</p>
+                    </div>
+                    <form id="product-form" class="form">
+                      <input type="hidden" name="productId" />
+                      <label>
+                        Name
+                        <input type="text" name="name" required />
+                      </label>
+                      <label>
+                        Description
+                        <textarea name="description" rows="3" required></textarea>
+                      </label>
+                      <label>
+                        Images (one URL per line)
+                        <textarea name="images" rows="3" placeholder="https://...\nhttps://..."></textarea>
+                      </label>
+                      <div class="form-split">
+                        <div>
+                          <label>Categories</label>
+                          <div id="product-categories" class="chip-list"></div>
+                        </div>
+                        <div>
+                          <label>Price Tags (one per line, format Name:Price)</label>
+                          <textarea name="priceTags" rows="4" placeholder="White:50.99\nBlack:89.99"></textarea>
+                        </div>
+                      </div>
+                      <div class="form-actions">
+                        <button type="submit" class="btn primary">Save product</button>
+                        <button type="button" id="product-cancel" class="btn ghost">Cancel edit</button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h2>Products</h2>
+                      <p>Click edit to update or delete a product.</p>
+                    </div>
+                    <div id="products-list" class="list"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="tab-categories" class="tab-panel">
+                <div class="panel-grid">
+                  <div class="card">
+                    <div class="card-header">
+                      <h2>Category editor</h2>
+                      <p>Create or update product categories.</p>
+                    </div>
+                    <form id="category-form" class="form">
+                      <input type="hidden" name="categoryId" />
+                      <label>
+                        Name
+                        <input type="text" name="name" required />
+                      </label>
+                      <label>
+                        Image URL
+                        <input type="url" name="image" required />
+                      </label>
+                      <div class="form-actions">
+                        <button type="submit" class="btn primary">Save category</button>
+                        <button type="button" id="category-cancel" class="btn ghost">Cancel edit</button>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="card">
+                    <div class="card-header">
+                      <h2>Categories</h2>
+                      <p>Manage category list and images.</p>
+                    </div>
+                    <div id="categories-list" class="list"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="tab-orders" class="tab-panel">
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Orders</h2>
+                    <p>Update order status and review items.</p>
+                  </div>
+                  <div id="orders-list" class="list"></div>
+                </div>
+              </div>
+
+              <div id="tab-users" class="tab-panel">
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Users</h2>
+                    <p>Assign admin role or review user data.</p>
+                  </div>
+                  <div id="users-list" class="list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
