@@ -4,11 +4,12 @@
   "description": "NestJS backend for the EShop mobile app",
   "private": true,
   "scripts": {
-    "start": "nest build && node dist/main.js",
-    "start:dev": "nest start --watch",
-    "build": "nest build",
-    "seed": "ts-node -r tsconfig-paths/register src/seed.ts"
-  },
+  "prebuild": "rimraf dist",
+  "build": "nest build",
+  "start": "node dist/main.js",
+  "start:dev": "nest start --watch",
+  "start:prod": "node dist/main.js"
+},
   "dependencies": {
     "typescript": "^6.0.3",
     "@nestjs/cli": "^10.3.0",
