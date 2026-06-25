@@ -1,20 +1,19 @@
-FROM node:20-alpine
-
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# 1. Pehle package files copy karein aur install karein
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 RUN npm install
 
-# 2. Pura ka pura code copy karein (taake tsconfig aur nest-cli sab andar jayein)
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# 3. NestJS app ko compile (build) karein
 RUN npm run build
 
-# 4. Environment port set karein (Railway isay khud handle karta hai)
-ENV PORT=4000
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/dist ./dist
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./
 EXPOSE 4000
-
-# 5. Application start karne ki command
-CMD ["sh", "-c", "if [ -f dist/src/main.js ]; then cd dist/src && node main.js; else cd dist && node main.js; fi"]
+CMD ["node", "dist/main.js"]
