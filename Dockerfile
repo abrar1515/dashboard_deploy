@@ -1,19 +1,22 @@
-FROM node:20-alpine AS deps
+FROM node:20-alpine
+
 WORKDIR /app
-COPY package.json package-lock.json* ./
+
+# 1. Package files copy karke install karein
+COPY package*.json ./
 RUN npm install
 
-FROM node:20-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# 2. Pura code copy karein
 COPY . .
+
+# 3. Production build generate karein
 RUN npm run build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=build /app/dist ./dist
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./
+# 4. Environment Port
+ENV PORT=4000
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
+
+# 5. SAFE PRODUCTION EXECUTION:
+# Hum node ko bolte hain ke app ko absolute path ke bajaye direct dist ke andar ja kar execute kare.
+# Is se thread-stream ya kisi bhi worker module ko relative path automatically mil jata hai.
+CMD ["sh", "-c", "cd dist && node main.js"]
