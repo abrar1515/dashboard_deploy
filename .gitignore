@@ -8,3 +8,5 @@ README.md
 dist
 coverage
 .DS_Store
+
+*.tsbuildinfo
