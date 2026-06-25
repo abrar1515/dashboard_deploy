@@ -17,4 +17,4 @@ ENV PORT=4000
 EXPOSE 4000
 
 # 5. Application start karne ki command
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "if [ -f dist/src/main.js ]; then cd dist/src && node main.js; else cd dist && node main.js; fi"]
