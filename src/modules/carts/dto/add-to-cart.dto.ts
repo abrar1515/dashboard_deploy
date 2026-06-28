@@ -1,4 +1,5 @@
-import { IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, Min } from 'class-validator';
 
 export class AddToCartDto {
   @IsNotEmpty()
@@ -6,4 +7,9 @@ export class AddToCartDto {
 
   @IsNotEmpty()
   priceTag: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  quantity: number;
 }

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, Min, ValidateNested } from 'class-validator';
 
 export class SyncCartItemDto {
   @IsNotEmpty()
@@ -7,6 +7,11 @@ export class SyncCartItemDto {
 
   @IsNotEmpty()
   priceTag: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  quantity: number;
 }
 
 export class SyncCartDto {

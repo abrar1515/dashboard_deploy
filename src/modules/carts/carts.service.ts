@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -44,6 +44,7 @@ export class CartsService {
       user,
       product,
       priceTag,
+      quantity: payload.quantity,
     });
 
     const saved = await this.cartRepository.save(cartItem);
@@ -82,6 +83,7 @@ export class CartsService {
         user,
         product,
         priceTag,
+        quantity: item.quantity,
       });
 
       await this.cartRepository.save(cartItem);
@@ -96,5 +98,25 @@ export class CartsService {
     });
 
     return refreshed.map(mapCartItem);
+  }
+
+  async removeItem(user: User, id: string) {
+    const cartItem = await this.cartRepository.findOne({
+      where: { id, user: { id: user.id } },
+    });
+
+    if (!cartItem) {
+      throw new NotFoundException('Cart item not found');
+    }
+
+    await this.cartRepository.remove(cartItem);
+
+    return { success: true };
+  }
+
+  async clearCart(user: User) {
+    await this.cartRepository.delete({ user: { id: user.id } });
+
+    return { success: true };
   }
 }

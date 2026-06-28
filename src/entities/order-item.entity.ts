@@ -21,6 +21,6 @@ export class OrderItem {
   @Column({ type: 'double precision' })
   price: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 1 })
   quantity: number;
 }

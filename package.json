@@ -4,14 +4,14 @@
   "description": "NestJS backend for the EShop mobile app",
   "private": true,
   "scripts": {
-  "prebuild": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-  "build": "tsc -p tsconfig.build.json && node -e \"require('fs').cpSync('src/public', 'dist/public', { recursive: true })\"",
-  "start": "node dist/main.js",
-  "start:dev": "nest start --watch",
-  "start:prod": "node dist/main.js"
-},
+    "prebuild": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.build.json && node -e \"require('fs').cpSync('src/public', 'dist/public', { recursive: true })\"",
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main.js",
+    "seed": "ts-node src/seed.ts"
+  },
   "dependencies": {
-    "typescript": "^6.0.3",
     "@nestjs/cli": "^10.3.0",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^4.0.3",
@@ -30,7 +30,8 @@
     "pg": "^8.11.5",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
     "@nestjs/schematics": "^10.1.0",

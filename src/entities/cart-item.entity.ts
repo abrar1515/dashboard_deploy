@@ -1,4 +1,4 @@
-import { CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { PriceTag } from './price-tag.entity';
 import { Product } from './product.entity';
@@ -17,6 +17,9 @@ export class CartItem {
 
   @ManyToOne(() => PriceTag, { eager: false, onDelete: 'CASCADE' })
   priceTag: PriceTag;
+
+  @Column({ type: 'int', default: 1 })
+  quantity: number;
 
   @CreateDateColumn()
   createdAt: Date;

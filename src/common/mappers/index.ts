@@ -7,10 +7,43 @@ import { PriceTag } from '../../entities/price-tag.entity';
 import { Product } from '../../entities/product.entity';
 import { User } from '../../entities/user.entity';
 
+const normalizeUrl = (value: string) => {
+  if (!value) {
+    return value;
+  }
+
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:')) {
+    return value;
+  }
+
+  const baseUrl = process.env.APP_BASE_URL ?? process.env.BASE_URL ?? '';
+
+  if (!baseUrl) {
+    return value;
+  }
+
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+  const normalizedPath = value.startsWith('/') ? value : `/${value}`;
+
+  return `${normalizedBaseUrl}${normalizedPath}`;
+};
+
+const calculateOrderTotals = (orderItems: OrderItem[], discount = 0) => {
+  const subTotal = (orderItems ?? []).reduce(
+    (sum, orderItem) => sum + Number(orderItem.price ?? 0),
+    0,
+  );
+
+  return {
+    subTotal,
+    total: Math.max(0, subTotal - Number(discount ?? 0)),
+  };
+};
+
 export const mapCategory = (category: Category) => ({
   _id: category.id,
   name: category.name,
-  image: category.image,
+  image: normalizeUrl(category.image),
 });
 
 export const mapPriceTag = (priceTag: PriceTag) => ({
@@ -35,6 +68,7 @@ export const mapCartItem = (cartItem: CartItem) => ({
   _id: cartItem.id,
   product: mapProduct(cartItem.product),
   priceTag: mapPriceTag(cartItem.priceTag),
+  quantity: cartItem.quantity,
 });
 
 export const mapDeliveryInfo = (deliveryInfo: DeliveryInfo) => ({
@@ -62,6 +96,7 @@ export const mapOrder = (order: Order) => ({
   deliveryInfo: mapDeliveryInfo(order.deliveryInfo),
   discount: Number(order.discount),
   orderStatus: order.orderStatus,
+  ...calculateOrderTotals(order.orderItems ?? [], order.discount),
 });
 
 export const mapUser = (user: User) => ({
@@ -85,5 +120,6 @@ export const mapAdminOrder = (order: Order) => ({
   deliveryInfo: mapDeliveryInfo(order.deliveryInfo),
   discount: Number(order.discount),
   orderStatus: order.orderStatus,
+  ...calculateOrderTotals(order.orderItems ?? [], order.discount),
   createdAt: order.createdAt,
 });

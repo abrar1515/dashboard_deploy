@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsOptional, Min, ValidateNested } from 'class-validator';
 
 export class CreateOrderItemDto {
   @IsOptional()
@@ -11,11 +11,8 @@ export class CreateOrderItemDto {
   @IsNotEmpty()
   priceTag: string;
 
-  @IsNumber()
-  @Type(() => Number)
-  price: number;
-
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   @Type(() => Number)
   quantity: number;
 }
@@ -32,7 +29,7 @@ export class CreateOrderDto {
   @IsNotEmpty()
   deliveryInfo: string;
 
-  @IsNumber()
+  @IsOptional()
   @Type(() => Number)
-  discount: number;
+  discount?: number;
 }

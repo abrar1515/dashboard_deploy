@@ -67,10 +67,12 @@ export class OrdersService {
         throw new BadRequestException('Invalid order item');
       }
 
+      const price = Number(priceTag.price) * item.quantity;
+
       const orderItem = this.orderItemsRepository.create({
         product,
         priceTag,
-        price: item.price,
+        price,
         quantity: item.quantity,
       });
 

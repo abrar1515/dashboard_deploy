@@ -12,10 +12,31 @@ import { PriceTag } from './entities/price-tag.entity';
 import { Product } from './entities/product.entity';
 import { User } from './entities/user.entity';
 import { UserRole } from './common/enums/user-role.enum';
+import 'dotenv/config';
+
+const fallbackDatabaseUrl =
+  'postgresql://postgres:HGwBOJLcHmyqlQWefiPdxjiPfLETXBDI@reseau.proxy.rlwy.net:18988/railway';
+
+const categoryImageUrl =
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693148015/category/headphone_pdqwo2.jpg';
+
+const mouseImages = [
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/vxyyemcdwcuoooyejehj.jpg',
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/vqiw6cswpnzhgryd3s1l.jpg',
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/tkanjwktt2t0qvybk5xf.jpg',
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/yjxkgevogpaim02wonks.jpg',
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/m2bb9pzzobynrpyo9ike.jpg',
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/xhojjofgfyfpbjwo2vox.jpg',
+];
+
+const headsetImages = [
+  'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/vxyyemcdwcuoooyejehj.jpg',
+];
 
 const dataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST ?? 'localhost',
+  url: process.env.DATABASE_URL ?? fallbackDatabaseUrl,
+  //ssl:{rejectUnauthorized: false},
   port: Number(process.env.DB_PORT ?? '5432'),
   username: process.env.DB_USER ?? 'postgres',
   password: process.env.DB_PASSWORD ?? '12345678',
@@ -31,7 +52,7 @@ const dataSource = new DataSource({
     OrderItem,
   ],
   synchronize: true,
-  //logging: true, 
+  //logging: false, 
 });
 
 async function seed() {
@@ -80,13 +101,11 @@ async function seed() {
     const categories = categoryRepository.create([
       {
         name: 'Headphone',
-        image:
-          'https://res.cloudinary.com/dhyttttax/image/upload/v1693148015/category/headphone_pdqwo2.jpg',
+        image: categoryImageUrl,
       },
       {
         name: 'Gaming',
-        image:
-          'https://res.cloudinary.com/dhyttttax/image/upload/v1693148015/category/headphone_pdqwo2.jpg',
+        image: categoryImageUrl,
       },
     ]);
     await categoryRepository.save(categories);
@@ -100,14 +119,7 @@ async function seed() {
     const mouseProduct = productRepository.create({
       name: 'Asus Gaming Mouse',
       description: 'Text description',
-      images: [
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/vxyyemcdwcuoooyejehj.jpg',
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/vqiw6cswpnzhgryd3s1l.jpg',
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/tkanjwktt2t0qvybk5xf.jpg',
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/yjxkgevogpaim02wonks.jpg',
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/m2bb9pzzobynrpyo9ike.jpg',
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/xhojjofgfyfpbjwo2vox.jpg',
-      ],
+      images: mouseImages,
       categories: headphoneCategory ? [headphoneCategory] : [],
       priceTags: [],
     });
@@ -122,9 +134,7 @@ async function seed() {
     const headsetProduct = productRepository.create({
       name: 'Wireless Headset',
       description: 'High quality wireless headset with noise cancellation.',
-      images: [
-        'https://res.cloudinary.com/dhyttttax/image/upload/v1693151785/product/vxyyemcdwcuoooyejehj.jpg',
-      ],
+      images: headsetImages,
       categories: headphoneCategory ? [headphoneCategory] : [],
       priceTags: [],
     });
