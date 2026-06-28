@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AdminGuard } from '../../common/guards/admin.guard';
@@ -13,6 +13,21 @@ export class AdminOrdersController {
   @Get()
   async list() {
     return this.adminOrdersService.list();
+  }
+
+  @Get('status/:status')
+  async listByStatus(@Param('status') status: string) {
+    return this.adminOrdersService.listByStatus(status);
+  }
+
+  @Get('deleted')
+  async listDeleted() {
+    return this.adminOrdersService.listDeleted();
+  }
+
+  @Delete(':id')
+  async deleteOrder(@Param('id') id: string) {
+    return this.adminOrdersService.deleteOrder(id);
   }
 
   @Put(':id/status')

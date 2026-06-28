@@ -2,11 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { OrderStatus } from '@/common/enums/order-status.enum';
 import { DeliveryInfo } from './delivery-info.entity';
 import { OrderItem } from './order-item.entity';
 import { User } from './user.entity';
@@ -17,6 +19,7 @@ export class Order {
   id: string;
 
   @ManyToOne(() => User, (user) => user.orders, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'customer_id' })
   user: User;
 
   @ManyToOne(() => DeliveryInfo, { eager: false })
@@ -30,9 +33,9 @@ export class Order {
   @Column({ type: 'double precision', default: 0 })
   discount: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: OrderStatus.PENDING, name: 'status' })
   orderStatus: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

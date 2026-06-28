@@ -6,6 +6,7 @@ import { OrderItem } from '../../entities/order-item.entity';
 import { PriceTag } from '../../entities/price-tag.entity';
 import { Product } from '../../entities/product.entity';
 import { User } from '../../entities/user.entity';
+import { OrderStatus } from '../enums/order-status.enum';
 
 const normalizeUrl = (value: string) => {
   if (!value) {
@@ -38,6 +39,21 @@ const calculateOrderTotals = (orderItems: OrderItem[], discount = 0) => {
     subTotal,
     total: Math.max(0, subTotal - Number(discount ?? 0)),
   };
+};
+
+const getOrderStatusLabel = (status: number) => {
+  switch (status) {
+    case OrderStatus.PENDING:
+      return 'Pending';
+    case OrderStatus.COMPLETED:
+      return 'Completed';
+    case OrderStatus.CANCELLED:
+      return 'Cancelled';
+    case OrderStatus.DELETED:
+      return 'Deleted';
+    default:
+      return 'Unknown';
+  }
 };
 
 export const mapCategory = (category: Category) => ({
@@ -96,6 +112,7 @@ export const mapOrder = (order: Order) => ({
   deliveryInfo: mapDeliveryInfo(order.deliveryInfo),
   discount: Number(order.discount),
   orderStatus: order.orderStatus,
+  status: getOrderStatusLabel(order.orderStatus),
   ...calculateOrderTotals(order.orderItems ?? [], order.discount),
 });
 
@@ -120,6 +137,7 @@ export const mapAdminOrder = (order: Order) => ({
   deliveryInfo: mapDeliveryInfo(order.deliveryInfo),
   discount: Number(order.discount),
   orderStatus: order.orderStatus,
+  status: getOrderStatusLabel(order.orderStatus),
   ...calculateOrderTotals(order.orderItems ?? [], order.discount),
   createdAt: order.createdAt,
 });

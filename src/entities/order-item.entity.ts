@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Order } from './order.entity';
 import { PriceTag } from './price-tag.entity';
@@ -10,12 +10,15 @@ export class OrderItem {
   id: string;
 
   @ManyToOne(() => Order, (order) => order.orderItems, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'order_id' })
   order: Order;
 
   @ManyToOne(() => Product, { eager: false })
+  @JoinColumn({ name: 'product_id' })
   product: Product;
 
   @ManyToOne(() => PriceTag, { eager: false })
+  @JoinColumn({ name: 'price_tag_id' })
   priceTag: PriceTag;
 
   @Column({ type: 'double precision' })
