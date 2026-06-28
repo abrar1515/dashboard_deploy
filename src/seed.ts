@@ -14,9 +14,6 @@ import { User } from './entities/user.entity';
 import { UserRole } from './common/enums/user-role.enum';
 import 'dotenv/config';
 
-//const fallbackDatabaseUrl =
- // 'postgresql://postgres:HGwBOJLcHmyqlQWefiPdxjiPfLETXBDI@reseau.proxy.rlwy.net:18988/railway';
-
 const categoryImageUrl =
   'https://res.cloudinary.com/dhyttttax/image/upload/v1693148015/category/headphone_pdqwo2.jpg';
 
@@ -35,7 +32,6 @@ const headsetImages = [
 
 const dataSource = new DataSource({
   type: 'postgres',
-  //url: process.env.DATABASE_URL ?? fallbackDatabaseUrl,
   url: 'postgresql://postgres:HGwBOJLcHmyqlQWefiPdxjiPfLETXBDI@reseau.proxy.rlwy.net:18988/railway',
   //ssl:{rejectUnauthorized: false},
   port: Number(process.env.DB_PORT ?? '5432'),
