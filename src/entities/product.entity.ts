@@ -23,6 +23,9 @@ export class Product {
   @Column({ type: 'text' })
   description: string;
 
+  @Column({ type: 'double precision', default: 0, name: 'delivery_fee' })
+  deliveryFee: number;
+
   @Column({ type: 'text', array: true })
   images: string[];
 

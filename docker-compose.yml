@@ -24,6 +24,7 @@ services:
       DB_PASSWORD: postgres
       DB_NAME: click_shop
       DB_SYNC: 'true'
+      DB_SSL: 'false'
       JWT_SECRET: 'eshop-secret'
       JWT_EXPIRES_IN: '7d'
       ADMIN_EMAIL: 'admin@click-shop.com'

@@ -31,7 +31,7 @@ const normalizeUrl = (value: string) => {
 
 const calculateOrderTotals = (orderItems: OrderItem[], discount = 0) => {
   const subTotal = (orderItems ?? []).reduce(
-    (sum, orderItem) => sum + Number(orderItem.price ?? 0),
+    (sum, orderItem) => sum + Number(orderItem.priceAtTime ?? 0) * (orderItem.quantity ?? 1),
     0,
   );
 
@@ -41,12 +41,16 @@ const calculateOrderTotals = (orderItems: OrderItem[], discount = 0) => {
   };
 };
 
-const getOrderStatusLabel = (status: number) => {
+const getOrderStatusLabel = (status: OrderStatus) => {
   switch (status) {
     case OrderStatus.PENDING:
       return 'Pending';
-    case OrderStatus.COMPLETED:
-      return 'Completed';
+    case OrderStatus.CONFIRMED:
+      return 'Confirmed';
+    case OrderStatus.SHIPPED:
+      return 'Shipped';
+    case OrderStatus.DELIVERED:
+      return 'Delivered';
     case OrderStatus.CANCELLED:
       return 'Cancelled';
     case OrderStatus.DELETED:
@@ -73,9 +77,10 @@ export const mapProduct = (product: Product) => ({
   _id: product.id,
   name: product.name,
   description: product.description,
+  deliveryFee: Number(product.deliveryFee ?? 0),
   priceTags: (product.priceTags ?? []).map(mapPriceTag),
   categories: (product.categories ?? []).map(mapCategory),
-  images: product.images ?? [],
+  images: (product.images ?? []).map(normalizeUrl),
   createdAt: product.createdAt,
   updatedAt: product.updatedAt,
 });
@@ -102,7 +107,8 @@ export const mapOrderItem = (orderItem: OrderItem) => ({
   _id: orderItem.id,
   product: mapProduct(orderItem.product),
   priceTag: mapPriceTag(orderItem.priceTag),
-  price: Number(orderItem.price),
+  priceAtTime: Number(orderItem.priceAtTime),
+  price: Number(orderItem.priceAtTime), // For dashboard compatibility
   quantity: orderItem.quantity,
 });
 
@@ -112,7 +118,8 @@ export const mapOrder = (order: Order) => ({
   deliveryInfo: mapDeliveryInfo(order.deliveryInfo),
   discount: Number(order.discount),
   orderStatus: order.orderStatus,
-  status: getOrderStatusLabel(order.orderStatus),
+  status: getOrderStatusLabel(order.status),
+  paymentMethod: order.paymentMethod,
   ...calculateOrderTotals(order.orderItems ?? [], order.discount),
 });
 
@@ -132,12 +139,58 @@ export const mapAdminUser = (user: User) => ({
 
 export const mapAdminOrder = (order: Order) => ({
   _id: order.id,
-  user: order.user ? mapUser(order.user) : null,
-  orderItems: (order.orderItems ?? []).map(mapOrderItem),
-  deliveryInfo: mapDeliveryInfo(order.deliveryInfo),
-  discount: Number(order.discount),
+  id: order.id,
+  customer: order.user
+    ? {
+        id: order.user.id,
+        name: `${order.user.firstName} ${order.user.lastName}`,
+        email: order.user.email,
+        phone: order.deliveryInfo?.contactNumber, // Assuming contact number is on delivery info
+        joinedAt: order.user.createdAt,
+      }
+    : null,
+  shippingAddress: order.deliveryInfo
+    ? {
+        name: `${order.deliveryInfo.firstName} ${order.deliveryInfo.lastName}`,
+        phone: order.deliveryInfo.contactNumber,
+        address: `${order.deliveryInfo.addressLineOne}${order.deliveryInfo.addressLineTwo ? `, ${order.deliveryInfo.addressLineTwo}` : ''}`,
+        city: order.deliveryInfo.city,
+        zipCode: order.deliveryInfo.zipCode,
+      }
+    : null,
+  items: (order.orderItems ?? []).map((item) => ({
+    id: item.id,
+    product: {
+      id: item.product.id,
+      name: item.product.name,
+      deliveryFee: Number(item.product.deliveryFee ?? 0),
+      image: item.product.images?.[0],
+      price: item.priceAtTime,
+    },
+    quantity: item.quantity,
+    priceAtTime: item.priceAtTime,
+    total: item.quantity * item.priceAtTime,
+  })),
+  payment: {
+    method: order.paymentMethod,
+    status: order.paymentStatus,
+    id: order.paymentId,
+  },
+  summary: {
+    subtotal: calculateOrderTotals(order.orderItems ?? []).subTotal,
+    deliveryFee: (order.orderItems ?? []).reduce(
+      (sum, item) => sum + Number(item.product?.deliveryFee ?? 0),
+      0,
+    ),
+    total: calculateOrderTotals(order.orderItems ?? [], order.discount).total + (order.orderItems ?? []).reduce(
+      (sum, item) => sum + Number(item.product?.deliveryFee ?? 0),
+      0,
+    ),
+  },
+  status: order.status,
+  // Legacy status for old admin UI
   orderStatus: order.orderStatus,
-  status: getOrderStatusLabel(order.orderStatus),
-  ...calculateOrderTotals(order.orderItems ?? [], order.discount),
+  user: order.user ? mapUser(order.user) : null, // For backward compatibility
+  orderItems: (order.orderItems ?? []).map(mapOrderItem), // For backward compatibility
   createdAt: order.createdAt,
 });

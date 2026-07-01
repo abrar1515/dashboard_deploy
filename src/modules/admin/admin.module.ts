@@ -7,6 +7,7 @@ import { Order } from '../../entities/order.entity';
 import { PriceTag } from '../../entities/price-tag.entity';
 import { Product } from '../../entities/product.entity';
 import { User } from '../../entities/user.entity';
+import { Settings } from '../../entities/settings.entity';
 import { AdminAuthController } from './admin-auth.controller';
 import { AdminAuthService } from './admin-auth.service';
 import { AdminCategoriesController } from './admin-categories.controller';
@@ -19,11 +20,13 @@ import { AdminSummaryController } from './admin-summary.controller';
 import { AdminSummaryService } from './admin-summary.service';
 import { AdminUsersController } from './admin-users.controller';
 import { AdminUsersService } from './admin-users.service';
+import { AdminSettingsService } from './admin-settings.service';
+import { AdminSettingsController } from './admin-settings.controller';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([User, Product, Category, PriceTag, Order]),
+    TypeOrmModule.forFeature([User, Product, Category, PriceTag, Order, Settings]),
   ],
   controllers: [
     AdminAuthController,
@@ -32,6 +35,7 @@ import { AdminUsersService } from './admin-users.service';
     AdminOrdersController,
     AdminUsersController,
     AdminSummaryController,
+    AdminSettingsController,
   ],
   providers: [
     AdminAuthService,
@@ -40,6 +44,7 @@ import { AdminUsersService } from './admin-users.service';
     AdminOrdersService,
     AdminUsersService,
     AdminSummaryService,
+    AdminSettingsService,
   ],
 })
 export class AdminModule {}

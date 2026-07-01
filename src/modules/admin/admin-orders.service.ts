@@ -21,8 +21,8 @@ export class AdminOrdersService {
         user: true,
         deliveryInfo: true,
         orderItems: {
-          product: { priceTags: true, categories: true },
-          priceTag: { product: true },
+          product: true,
+          priceTag: true,
         },
       },
       order: { createdAt: 'DESC' },
@@ -39,23 +39,27 @@ export class AdminOrdersService {
     const normalizedStatus = status.trim().toLowerCase();
     const statusMap: Record<string, OrderStatus> = {
       pending: OrderStatus.PENDING,
-      completed: OrderStatus.COMPLETED,
+      confirmed: OrderStatus.CONFIRMED,
+      shipped: OrderStatus.SHIPPED,
+      delivered: OrderStatus.DELIVERED,
       cancelled: OrderStatus.CANCELLED,
+      deleted: OrderStatus.DELETED,
     };
 
-    const orderStatus = statusMap[normalizedStatus];
+    const newStatus = statusMap[normalizedStatus];
 
-    if (orderStatus === undefined) {
+    if (newStatus === undefined) {
       throw new NotFoundException('Invalid order status');
     }
 
-    const orders = await this.loadOrders({ orderStatus });
+    // Querying the new 'status' field instead of the legacy 'orderStatus'
+    const orders = await this.loadOrders({ status: newStatus });
 
     return { data: orders.map(mapAdminOrder) };
   }
 
   async listDeleted() {
-    const orders = await this.loadOrders({ orderStatus: OrderStatus.DELETED });
+    const orders = await this.loadOrders({ status: OrderStatus.DELETED });
 
     return { data: orders.map(mapAdminOrder) };
   }
@@ -67,8 +71,8 @@ export class AdminOrdersService {
         user: true,
         deliveryInfo: true,
         orderItems: {
-          product: { priceTags: true, categories: true },
-          priceTag: { product: true },
+          product: true,
+          priceTag: true,
         },
       },
     });
@@ -77,7 +81,8 @@ export class AdminOrdersService {
       throw new NotFoundException('Order not found');
     }
 
-    order.orderStatus = OrderStatus.DELETED;
+    order.status = OrderStatus.DELETED;
+    order.orderStatus = 3; // Set legacy status for backward compatibility
     const saved = await this.ordersRepository.save(order);
 
     return mapAdminOrder(saved);
@@ -90,8 +95,8 @@ export class AdminOrdersService {
         user: true,
         deliveryInfo: true,
         orderItems: {
-          product: { priceTags: true, categories: true },
-          priceTag: { product: true },
+          product: true,
+          priceTag: true,
         },
       },
     });
@@ -100,7 +105,23 @@ export class AdminOrdersService {
       throw new NotFoundException('Order not found');
     }
 
+    // This logic updates the legacy numeric status.
+    // We'll also update the new string-based status for consistency.
     order.orderStatus = payload.orderStatus;
+
+    const statusMap: Record<number, OrderStatus> = {
+      0: OrderStatus.PENDING,
+      1: OrderStatus.CONFIRMED,
+      2: OrderStatus.SHIPPED,
+      3: OrderStatus.CANCELLED,
+      4: OrderStatus.DELETED,
+    };
+
+    const newStatus = statusMap[payload.orderStatus];
+    if (newStatus) {
+      order.status = newStatus;
+    }
+
     const saved = await this.ordersRepository.save(order);
 
     return mapAdminOrder(saved);

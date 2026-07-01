@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CartItem } from '../../entities/cart-item.entity';
 import { DeliveryInfo } from '../../entities/delivery-info.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderItem } from '../../entities/order-item.entity';
@@ -17,6 +18,7 @@ import { OrdersService } from './orders.service';
       Product,
       PriceTag,
       DeliveryInfo,
+      CartItem,
     ]),
   ],
   controllers: [OrdersController],

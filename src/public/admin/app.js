@@ -7,14 +7,15 @@ const state = {
   products: [],
   orders: [],
   users: [],
+  orderFilter: 0,
 };
 
 const ORDER_STATUS = [
   { value: 0, label: 'Pending' },
-  { value: 1, label: 'Processing' },
+  { value: 1, label: 'Approved' },
   { value: 2, label: 'Shipped' },
-  { value: 3, label: 'Delivered' },
-  { value: 4, label: 'Cancelled' },
+  { value: 3, label: 'Cancelled' },
+  { value: 4, label: 'Deleted' },
 ];
 
 const selectors = {
@@ -37,7 +38,9 @@ const selectors = {
   categoryCancel: document.getElementById('category-cancel'),
   categoriesList: document.getElementById('categories-list'),
   ordersList: document.getElementById('orders-list'),
+  orderTabs: document.getElementById('order-tabs'),
   usersList: document.getElementById('users-list'),
+  settingsForm: document.getElementById('settings-form'),
 };
 
 const showToast = (message, type = 'info') => {
@@ -162,6 +165,7 @@ const loadProducts = async () => {
 const loadOrders = async () => {
   const result = await request('/admin/orders');
   state.orders = result.data ?? [];
+  renderOrderTabs();
   renderOrders();
 };
 
@@ -171,12 +175,24 @@ const loadUsers = async () => {
   renderUsers();
 };
 
+const loadSettings = async () => {
+  try {
+    const settings = await request('/admin/settings');
+    selectors.settingsForm.jazzCashNumber.value = settings.jazzCashNumber;
+    selectors.settingsForm.easyPaisaNumber.value = settings.easyPaisaNumber;
+    selectors.settingsForm.adminEmail.value = settings.adminEmail;
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+};
+
 const refreshAll = async () => {
   await loadSummary();
   await loadCategories();
   await loadProducts();
   await loadOrders();
   await loadUsers();
+  await loadSettings();
 };
 
 const renderCategoryOptions = () => {
@@ -204,13 +220,15 @@ const renderProducts = () => {
     card.className = 'list-item';
     const categories = (product.categories || []).map((cat) => cat.name).join(', ');
     const priceTags = (product.priceTags || [])
-      .map((tag) => `${tag.name}: ${tag.price}`)
+      .map((tag) => `${tag.name}: RS. ${tag.price}`)
       .join(', ');
+    const deliveryFee = product.deliveryFee > 0 ? `RS. ${product.deliveryFee}` : 'Free Delivery';
 
     card.innerHTML = `
       <h3>${product.name}</h3>
       <div class="muted">${product.description}</div>
       <div class="badge">${categories || 'No categories'}</div>
+      <div class="muted">Delivery: ${deliveryFee}</div>
       <div class="muted">${priceTags || 'No price tags'}</div>
       <div class="list-actions">
         <button class="btn ghost" data-action="edit">Edit</button>
@@ -259,14 +277,30 @@ const renderCategories = () => {
   });
 };
 
+const renderOrderItems = (orderItems) => {
+  if (!orderItems || orderItems.length === 0) {
+    return '<div class="muted">No items in this order.</div>';
+  }
+  return `
+    <ul class="order-items-list">
+      ${orderItems.map(item => `<li>${item.quantity} x ${item.product.name} (${item.priceTag.name}) @ RS. ${item.price}</li>`).join('')}
+    </ul>
+  `;
+};
+
 const renderOrders = () => {
   selectors.ordersList.innerHTML = '';
-  if (state.orders.length === 0) {
-    selectors.ordersList.innerHTML = '<div class="muted">No orders found.</div>';
+  const filteredOrders = state.orders.filter(
+    (order) => Number(order.orderStatus) === Number(state.orderFilter),
+  );
+
+  if (filteredOrders.length === 0) {
+    const activeStatus = ORDER_STATUS.find((status) => status.value === state.orderFilter);
+    selectors.ordersList.innerHTML = `<div class="muted">No ${activeStatus ? activeStatus.label.toLowerCase() : 'selected'} orders found.</div>`;
     return;
   }
 
-  state.orders.forEach((order) => {
+  filteredOrders.forEach((order) => {
     const card = document.createElement('div');
     card.className = 'list-item';
     const itemCount = order.orderItems ? order.orderItems.length : 0;
@@ -275,13 +309,26 @@ const renderOrders = () => {
       (status) =>
         `<option value="${status.value}" ${status.value === order.orderStatus ? 'selected' : ''}>${status.label}</option>`,
     ).join('');
+    const orderItemsHtml = renderOrderItems(order.orderItems);
+
+    const paymentMethod = order.payment?.method ? order.payment.method.toUpperCase() : 'COD';
+    const paymentId = order.payment?.id ? `(${order.payment.id})` : '';
+    const totalAmount = order.summary?.total ?? '0';
 
     card.innerHTML = `
-      <h3>Order ${order._id}</h3>
+      <div class="order-header">
+        <h3>Order ${order._id}</h3>
+        <div class="order-total">RS. ${totalAmount}</div>
+      </div>
       <div class="muted">${userEmail} • ${itemCount} items</div>
-      <div class="list-actions">
-        <select data-role="status">${statusOptions}</select>
-        <button class="btn ghost" data-action="update">Update status</button>
+      <div class="muted">Payment: <strong>${paymentMethod}</strong> ${paymentId}</div>
+      ${orderItemsHtml}
+      <div class="order-status-row">
+        <span class="badge">${ORDER_STATUS.find((status) => status.value === order.orderStatus)?.label || 'Unknown'}</span>
+        <div class="list-actions">
+          <select data-role="status">${statusOptions}</select>
+          <button class="btn ghost" data-action="update">Update status</button>
+        </div>
       </div>
     `;
 
@@ -304,10 +351,7 @@ const renderUsers = () => {
     const card = document.createElement('div');
     card.className = 'list-item';
     const roleOptions = ['ADMIN', 'CUSTOMER']
-      .map(
-        (role) =>
-          `<option value="${role}" ${role === user.role ? 'selected' : ''}>${role}</option>`,
-      )
+      .map((role) => `<option value="${role}" ${role === user.role ? 'selected' : ''}>${role}</option>`)
       .join('');
 
     card.innerHTML = `
@@ -331,6 +375,7 @@ const populateProductForm = (product) => {
   selectors.productForm.productId.value = product._id;
   selectors.productForm.name.value = product.name;
   selectors.productForm.description.value = product.description;
+  selectors.productForm.deliveryFee.value = product.deliveryFee ?? 0;
   selectors.productForm.images.value = (product.images || []).join('\n');
   selectors.productForm.priceTags.value = (product.priceTags || [])
     .map((tag) => `${tag.name}:${tag.price}`)
@@ -341,16 +386,6 @@ const populateProductForm = (product) => {
     .querySelectorAll('input[type="checkbox"]')
     .forEach((input) => {
       input.checked = selected.has(input.value);
-    });
-};
-
-const resetProductForm = () => {
-  selectors.productForm.reset();
-  selectors.productForm.productId.value = '';
-  selectors.productCategories
-    .querySelectorAll('input[type="checkbox"]')
-    .forEach((input) => {
-      input.checked = false;
     });
 };
 
@@ -365,17 +400,73 @@ const resetCategoryForm = () => {
   selectors.categoryForm.categoryId.value = '';
 };
 
+const resetProductForm = () => {
+  selectors.productForm.reset();
+};
+
+const renderOrderTabs = () => {
+  if (!selectors.orderTabs) {
+    return;
+  }
+
+  selectors.orderTabs.innerHTML = '';
+
+  ORDER_STATUS.forEach((status) => {
+    const count = state.orders.filter(
+      (order) => Number(order.orderStatus) === Number(status.value),
+    ).length;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `order-tab-btn ${state.orderFilter === status.value ? 'active' : ''}`;
+    button.dataset.status = String(status.value);
+    button.innerHTML = `
+      <span class="order-tab-title">${status.label}</span>
+      <span class="order-tab-count">${count}</span>
+    `;
+
+    button.addEventListener('click', () => {
+      state.orderFilter = status.value;
+      renderOrderTabs();
+      renderOrders();
+    });
+
+    selectors.orderTabs.appendChild(button);
+  });
+};
+
+const setOrdersDefaultTab = () => {
+  state.orderFilter = 0;
+  renderOrderTabs();
+  renderOrders();
+};
+
+const deleteProduct = async (id) => {
+  if (!confirm('Delete this product?')) return;
+
+  try {
+    await request(`/admin/products/${id}`, { method: 'DELETE' });
+    showToast('Product deleted.');
+    await loadProducts();
+    await loadSummary();
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+};
+
 const submitProduct = async (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
+  const categories = Array.from(
+    selectors.productCategories.querySelectorAll('input:checked'),
+  ).map((input) => input.value);
+
   const payload = {
     name: formData.get('name'),
     description: formData.get('description'),
-    images: parseLines(formData.get('images') || ''),
-    categories: Array.from(
-      selectors.productCategories.querySelectorAll('input:checked'),
-    ).map((input) => input.value),
-    priceTags: parsePriceTags(formData.get('priceTags') || ''),
+    deliveryFee: Number(formData.get('deliveryFee') || 0),
+    images: parseLines(formData.get('images')),
+    priceTags: parsePriceTags(formData.get('priceTags')),
+    categories,
   };
 
   const productId = formData.get('productId');
@@ -393,19 +484,6 @@ const submitProduct = async (event) => {
     }
 
     resetProductForm();
-    await loadProducts();
-    await loadSummary();
-  } catch (error) {
-    showToast(error.message, 'error');
-  }
-};
-
-const deleteProduct = async (id) => {
-  if (!confirm('Delete this product?')) return;
-
-  try {
-    await request(`/admin/products/${id}`, { method: 'DELETE' });
-    showToast('Product deleted.');
     await loadProducts();
     await loadSummary();
   } catch (error) {
@@ -481,6 +559,22 @@ const updateUserRole = async (id, role) => {
   }
 };
 
+const submitSettings = async (event) => {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const payload = Object.fromEntries(formData.entries());
+
+  try {
+    await request('/admin/settings', {
+      method: 'PUT',
+      body: payload,
+    });
+    showToast('Settings updated.');
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+};
+
 const initTabs = () => {
   document.querySelectorAll('.tab-btn').forEach((button) => {
     button.addEventListener('click', () => {
@@ -488,6 +582,10 @@ const initTabs = () => {
       document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
       button.classList.add('active');
       document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+
+      if (button.dataset.tab === 'orders') {
+        setOrdersDefaultTab();
+      }
     });
   });
 };
@@ -498,6 +596,7 @@ selectors.productForm.addEventListener('submit', submitProduct);
 selectors.productCancel.addEventListener('click', resetProductForm);
 selectors.categoryForm.addEventListener('submit', submitCategory);
 selectors.categoryCancel.addEventListener('click', resetCategoryForm);
+selectors.settingsForm.addEventListener('submit', submitSettings);
 
 initTabs();
 

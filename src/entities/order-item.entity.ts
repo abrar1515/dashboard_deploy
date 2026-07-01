@@ -22,7 +22,7 @@ export class OrderItem {
   priceTag: PriceTag;
 
   @Column({ type: 'double precision' })
-  price: number;
+  priceAtTime: number;
 
   @Column({ type: 'int', default: 1 })
   quantity: number;

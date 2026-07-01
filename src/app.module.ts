@@ -12,6 +12,7 @@ import { Order } from './entities/order.entity';
 import { PriceTag } from './entities/price-tag.entity';
 import { Product } from './entities/product.entity';
 import { User } from './entities/user.entity';
+import { Settings } from './entities/settings.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { CartsModule } from './modules/carts/carts.module';
 import { CategoriesModule } from './modules/categories/categories.module';
@@ -19,6 +20,7 @@ import { DeliveryInfoModule } from './modules/delivery-info/delivery-info.module
 import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -49,6 +51,7 @@ import { AdminModule } from './modules/admin/admin.module';
           DeliveryInfo,
           Order,
           OrderItem,
+          Settings,
         ],
         synchronize: config.get<string>('DB_SYNC', 'true') === 'true',
       }),
@@ -60,6 +63,7 @@ import { AdminModule } from './modules/admin/admin.module';
     DeliveryInfoModule,
     OrdersModule,
     AdminModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

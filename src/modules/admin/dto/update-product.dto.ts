@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsOptional,
+  IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -14,6 +15,11 @@ export class UpdateProductDto {
 
   @IsOptional()
   description?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  deliveryFee?: number;
 
   @IsOptional()
   @IsArray()

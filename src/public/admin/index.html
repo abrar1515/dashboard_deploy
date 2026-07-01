@@ -68,6 +68,10 @@
                   Users
                   <span class="tab-meta">Roles & access</span>
                 </button>
+                <button class="tab-btn" data-tab="contact">
+                  Contact
+                  <span class="tab-meta">Payment numbers</span>
+                </button>
               </nav>
               <div class="sidebar-footer">
                 <div class="muted">Logged in as</div>
@@ -111,6 +115,10 @@
                       <label>
                         Description
                         <textarea name="description" rows="3" required></textarea>
+                      </label>
+                      <label>
+                        <span>Delivery Fee</span>
+                        <input type="number" name="deliveryFee" placeholder="e.g., 150" step="0.01" value="0" />
                       </label>
                       <label>
                         Images (one URL per line)
@@ -177,12 +185,22 @@
               </div>
 
               <div id="tab-orders" class="tab-panel">
-                <div class="card">
-                  <div class="card-header">
-                    <h2>Orders</h2>
-                    <p>Update order status and review items.</p>
+                <div class="orders-layout">
+                  <div class="card orders-main">
+                    <div class="card-header">
+                      <h2>Orders</h2>
+                      <p>Update order status and review items.</p>
+                    </div>
+                    <div id="orders-list" class="list"></div>
                   </div>
-                  <div id="orders-list" class="list"></div>
+
+                  <aside class="card orders-sidebar">
+                    <div class="card-header">
+                      <h2>Status tabs</h2>
+                      <p>Filter orders by status.</p>
+                    </div>
+                    <div id="order-tabs" class="order-tabs"></div>
+                  </aside>
                 </div>
               </div>
 
@@ -193,6 +211,32 @@
                     <p>Assign admin role or review user data.</p>
                   </div>
                   <div id="users-list" class="list"></div>
+                </div>
+              </div>
+
+              <div id="tab-contact" class="tab-panel">
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Contact Settings</h2>
+                    <p>Update JazzCash, EasyPaisa numbers and Admin Email.</p>
+                  </div>
+                  <form id="settings-form" class="form">
+                    <label>
+                      JazzCash Number
+                      <input type="text" name="jazzCashNumber" required />
+                    </label>
+                    <label>
+                      EasyPaisa Number
+                      <input type="text" name="easyPaisaNumber" required />
+                    </label>
+                    <label>
+                      Admin Email
+                      <input type="email" name="adminEmail" required />
+                    </label>
+                    <div class="form-actions">
+                      <button type="submit" class="btn primary">Update Settings</button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>

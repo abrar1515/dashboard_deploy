@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -15,6 +16,11 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   description: string;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  deliveryFee?: number;
 
   @IsArray()
   @IsString({ each: true })

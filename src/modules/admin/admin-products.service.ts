@@ -97,19 +97,15 @@ export class AdminProductsService {
     const product = this.productsRepository.create({
       name: payload.name,
       description: payload.description,
+      deliveryFee: payload.deliveryFee,
       images: payload.images ?? [],
       categories,
-    });
-
-    const priceTags = (payload.priceTags ?? []).map((tag) =>
-      this.priceTagsRepository.create({
+      priceTags: (payload.priceTags ?? []).map((tag) => ({
         name: tag.name,
         price: tag.price,
-        product,
-      }),
-    );
-
-    product.priceTags = priceTags;
+        // No need to set product here, TypeORM handles it with cascade
+      })),
+    });
 
     const saved = await this.productsRepository.save(product);
     return this.findOne(saved.id);
@@ -133,6 +129,10 @@ export class AdminProductsService {
       product.description = payload.description;
     }
 
+    if (payload.deliveryFee !== undefined) {
+      product.deliveryFee = payload.deliveryFee;
+    }
+
     if (payload.images !== undefined) {
       product.images = payload.images;
     }
@@ -147,13 +147,10 @@ export class AdminProductsService {
 
     if (payload.priceTags !== undefined) {
       await this.priceTagsRepository.delete({ product: { id: product.id } });
-      product.priceTags = payload.priceTags.map((tag) =>
-        this.priceTagsRepository.create({
-          name: tag.name,
-          price: tag.price,
-          product,
-        }),
-      );
+      product.priceTags = payload.priceTags.map((tag) => this.priceTagsRepository.create({
+        name: tag.name,
+        price: tag.price,
+      }));
     }
 
     const saved = await this.productsRepository.save(product);

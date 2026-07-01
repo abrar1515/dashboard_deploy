@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
 
-import { AdminGuard } from '../../common/guards/admin.guard';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CheckoutOrderDto } from './dto/checkout-order.dto';
+import { CreateDirectOrderDto } from './dto/create-direct-order.dto';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
@@ -11,32 +11,30 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  async getOrders(@Req() req: any) {
-    return this.ordersService.getOrders(req.user);
+  async list(@Req() req: any) {
+    return this.ordersService.list(req.user);
   }
 
-  @Get('status/:status')
-  @UseGuards(AdminGuard)
-  async getOrdersByStatus(@Param('status') status: string) {
-    return this.ordersService.getOrdersByStatus(status);
+  @Get(':id')
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    return this.ordersService.findOne(id, req.user);
   }
 
-  @Get('deleted')
-  @UseGuards(AdminGuard)
-  async getDeletedOrders() {
-    return this.ordersService.getDeletedOrders();
-  }
-
-  @Post()
+  @Post('direct')
   @HttpCode(200)
-  async createOrder(@Req() req: any, @Body() payload: CreateOrderDto) {
-    return this.ordersService.createOrder(req.user, payload);
+  async createDirect(
+    @Req() req: any,
+    @Body() payload: CreateDirectOrderDto,
+  ) {
+    return this.ordersService.createDirect(req.user, payload);
   }
 
-  @Delete(':id')
+  @Post('checkout')
   @HttpCode(200)
-  @UseGuards(AdminGuard)
-  async deleteOrder(@Param('id') id: string) {
-    return this.ordersService.deleteOrder(id);
+  async createFromCart(
+    @Req() req: any,
+    @Body() payload: CheckoutOrderDto,
+  ) {
+    return this.ordersService.createFromCart(req.user, payload);
   }
 }

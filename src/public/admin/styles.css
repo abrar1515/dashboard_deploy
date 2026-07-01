@@ -326,6 +326,96 @@ textarea {
   gap: 16px;
 }
 
+.orders-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+
+.orders-sidebar {
+  position: sticky;
+  top: 110px;
+}
+
+.order-tabs {
+  display: grid;
+  gap: 10px;
+}
+
+.order-tab-btn {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.order-tab-btn:hover {
+  transform: translateY(-1px);
+}
+
+.order-tab-btn.active {
+  background: rgba(39, 194, 164, 0.12);
+  border-color: rgba(39, 194, 164, 0.4);
+}
+
+.order-tab-title {
+  text-align: left;
+}
+
+.order-tab-count {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+}
+
+.order-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-total {
+  font-weight: 700;
+  color: var(--accent-2);
+  font-size: 1.1rem;
+}
+
+.order-items-list {
+  list-style: none;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 8px 0;
+}
+
+.order-items-list li {
+  font-size: 0.9rem;
+  padding: 4px 0;
+}
+
 .list {
   display: grid;
   gap: 12px;
@@ -429,6 +519,14 @@ textarea {
     position: static;
     min-height: auto;
   }
+
+  .orders-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .orders-sidebar {
+    position: static;
+  }
 }
 
 @media (max-width: 720px) {
@@ -441,4 +539,13 @@ textarea {
     width: 100%;
     justify-content: space-between;
   }
+}
+
+/*
+ * Order Status Dropdown Style Fix
+ * Yeh code <select> ke andar <option> elements ko style karta hai.
+ */
+.list-actions select[data-role="status"] option {
+  background-color: #ffffff; /* Options ke liye white background */
+  color: #000000; /* Options ke text ke liye black color */
 }
