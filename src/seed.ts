@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 import * as bcrypt from 'bcryptjs';
 import { DataSource } from 'typeorm';
 
@@ -11,7 +9,12 @@ import { Order } from './entities/order.entity';
 import { PriceTag } from './entities/price-tag.entity';
 import { Product } from './entities/product.entity';
 import { User } from './entities/user.entity';
+import { Settings } from './entities/settings.entity';
+import { OrderStatus } from './common/enums/order-status.enum';
+import { PaymentMethod } from './common/enums/payment-method.enum';
+import { PaymentStatus } from './common/enums/payment-status.enum';
 import { UserRole } from './common/enums/user-role.enum';
+import 'reflect-metadata';
 import 'dotenv/config';
 
 const categoryImageUrl =
@@ -32,13 +35,15 @@ const headsetImages = [
 
 const dataSource = new DataSource({
   type: 'postgres',
-  
-  url: 'postgresql://postgres:HGwBOJLcHmyqlQWefiPdxjiPfLETXBDI@postgres.railway.internal:5432/railway',
+  //host: process.env.DB_HOST ?? 'localhost',
+  url: 'postgresql://postgres:xALOkzHoSMIpRJlxHlQSpIKlhxhgeywh@zephyr.proxy.rlwy.net:18764/railway',
   //ssl:{rejectUnauthorized: false},
   port: Number(process.env.DB_PORT ?? '5432'),
   username: process.env.DB_USER ?? 'postgres',
   password: process.env.DB_PASSWORD ?? '12345678',
   database: process.env.DB_NAME ?? 'click_shop',
+  ssl:
+    process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   entities: [
     User,
     Category,
@@ -48,6 +53,7 @@ const dataSource = new DataSource({
     DeliveryInfo,
     Order,
     OrderItem,
+    Settings,
   ],
   synchronize: true,
   //logging: false, 
@@ -59,24 +65,32 @@ async function seed() {
   const userRepository = dataSource.getRepository(User);
   const categoryRepository = dataSource.getRepository(Category);
   const productRepository = dataSource.getRepository(Product);
+  const deliveryInfoRepository = dataSource.getRepository(DeliveryInfo);
+  const orderRepository = dataSource.getRepository(Order);
+  const settingsRepository = dataSource.getRepository(Settings);
 
   const existingUser = await userRepository.findOne({
     where: { email: 'demo@click-shop.com' },
   });
 
+  let user: User;
   if (!existingUser) {
     const passwordHash = await bcrypt.hash('password123', 10);
-    const user = userRepository.create({
+    const newUser = userRepository.create({
       firstName: 'Demo',
       lastName: 'User',
       email: 'demo@click-shop.com',
       passwordHash,
       role: UserRole.CUSTOMER,
     });
-    await userRepository.save(user);
+    user = await userRepository.save(newUser);
+  } else {
+    user = existingUser;
   }
 
-  const adminEmail = (process.env.ADMIN_EMAIL ?? 'admin@click-shop.com').toLowerCase();
+  const adminEmail = (
+    process.env.ADMIN_EMAIL ?? 'admin@click-shop.com'
+  ).toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
   const existingAdmin = await userRepository.findOne({
     where: { email: adminEmail },
@@ -145,6 +159,66 @@ async function seed() {
     headsetProduct.priceTags = [blackPriceTag];
 
     await productRepository.save([mouseProduct, headsetProduct]);
+  }
+
+  const orderCount = await orderRepository.count({
+    where: { user: { id: user.id } },
+  });
+
+  if (orderCount === 0) {
+    console.log('Seeding an order for the demo user...');
+
+    let deliveryInfo = await deliveryInfoRepository.findOne({
+      where: { user: { id: user.id } },
+    });
+
+    if (!deliveryInfo) {
+      const newDeliveryInfo = deliveryInfoRepository.create({
+        user,
+        firstName: 'Demo',
+        lastName: 'User',
+        addressLineOne: '123 Main St',
+        city: 'Karachi',
+        contactNumber: '03001234567',
+      });
+      deliveryInfo = await deliveryInfoRepository.save(newDeliveryInfo);
+    }
+
+    const productToOrder = await productRepository.findOne({
+      where: {},
+      relations: ['priceTags'],
+    });
+
+    if (productToOrder && productToOrder.priceTags.length > 0) {
+      const orderItem = new OrderItem();
+      orderItem.product = productToOrder;
+      orderItem.priceTag = productToOrder.priceTags[0];
+      orderItem.quantity = 1;
+      orderItem.priceAtTime = productToOrder.priceTags[0].price;
+
+      const order = orderRepository.create({
+        user,
+        deliveryInfo,
+        orderItems: [orderItem],
+        paymentMethod: PaymentMethod.COD,
+        paymentStatus: PaymentStatus.PENDING,
+        status: OrderStatus.PENDING,
+        orderStatus: 0, // Legacy status
+      });
+
+      await orderRepository.save(order);
+    }
+  }
+
+  // Seed Settings
+  const settingsCount = await settingsRepository.count();
+  if (settingsCount === 0) {
+    const settings = settingsRepository.create({
+      jazzCashNumber: '03062555956',
+      easyPaisaNumber: '03062555956',
+      adminEmail: 'admin@clickshop.com',
+    });
+    await settingsRepository.save(settings);
   }
 
   await dataSource.destroy();
