@@ -1,134 +1,101 @@
-# EShop Backend (NestJS + Postgres)
+# Click Shop Backend (NestJS + Postgres)
 
-This backend mirrors the API contract used by the Flutter EShop app in `../Flutter-TDD-Clean-Architecture-E-Commerce-App`.
+A robust NestJS backend for the Click Shop mobile application. It features a complete administrative dashboard, manual payment verification system, and product management.
 
-## Quick Start (Local)
+## 🚀 Features
 
-1. Copy env file:
+- **Authentication**: JWT-based auth for both Customers and Admin.
+- **Product Management**: Full CRUD for products, categories, price tags, and multi-image support.
+- **Order Management**: Real-time order tracking with status updates (Pending, Confirmed, Shipped, etc.).
+- **Dynamic Payment Configuration**: Admin can update JazzCash/EasyPaisa numbers directly from the dashboard, which instantly updates the Flutter app.
+- **Manual Payment Workflow**: Optimized for manual verification (Reference-based) of mobile wallet payments.
+- **Admin Dashboard**: Embedded web UI served at `/admin` for easy store management.
+- **Docker Support**: Containerized setup with PostgreSQL.
 
+## 🛠️ Quick Start (Local)
+
+1. **Environment Setup**:
+   Copy `.env.example` to `.env` and update your database credentials.
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Build & Seed Database**:
+   Initializes the database with default admin, products, and contact settings.
+   ```bash
+   npm run build
+   npm run seed
+   ```
+
+4. **Start the API**:
+   ```bash
+   npm run start:dev
+   ```
+   The API will be available at `http://localhost:4000`.
+
+## 🐳 Docker Setup
+
+Run the entire stack (API + Database) using Docker Compose:
 ```bash
-cp .env.example .env
+docker-compose up --build
 ```
-
-2. Install deps:
-
+Once the containers are running, seed the database:
 ```bash
-npm install
+docker-compose exec api npm run seed
 ```
 
-3. Run Postgres locally (or via Docker) and then seed:
+## 📊 Admin Dashboard
 
-```bash
-npm run seed
-```
+Access the embedded admin panel:
+- **URL**: `http://localhost:4000/admin`
+- **Default Credentials** (From `.env`):
+  - **Email**: `admin@clickshop.com`
+  - **Password**: `admin123`
 
-4. Start the API:
+### Dashboard Tabs:
+- **Products**: Manage catalog and pricing.
+- **Categories**: Organize product collections.
+- **Orders**: Monitor and update order fulfillment status.
+- **Users**: Manage user roles (Admin/Customer).
+- **Contact**: Update JazzCash & EasyPaisa numbers used for mobile payments.
 
-```bash
-npm run start:dev
-```
+## 📱 Mobile App Integration
 
-The API runs on `http://localhost:4000` by default.
+Update the `baseUrl` in your Flutter app (`lib/core/constant/strings.dart`):
+- **Emulator**: `http://10.0.2.2:4000`
+- **Physical Device**: `http://<your-lan-ip>:4000`
+- **Production**: Your deployed URL (e.g., Railway or Heroku).
 
-## Admin Panel Guide
+## 🌍 Deployment (Railway/Heroku)
 
-The admin UI is embedded and served by NestJS (static files).
+Ensure you set the following environment variables on your cloud provider:
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- `DB_SSL=true` (Required for most cloud DB providers)
+- `DB_SYNC=true` (Enable for first run to create tables)
+- `JWT_SECRET`: A strong secret key for tokens.
 
-### Access
+## 📜 API Overview
 
-- URL: `http://localhost:4000/admin`
-
-### Default Admin Credentials
-
-These are created during `npm run seed`:
-
-- Email: `admin@eshop.com`
-- Password: `admin123`
-
-You can override them in `.env`:
-
-```
-ADMIN_EMAIL=admin@eshop.com
-ADMIN_PASSWORD=admin123
-```
-
-### Features
-
-- Products: create/update/delete, manage price tags and images
-- Categories: create/update/delete
-- Orders: view and update status
-- Users: view and update role (ADMIN / CUSTOMER)
-
-### Notes
-
-- Use the admin sign-in (`POST /admin/auth/sign-in`) to get a bearer token.
-- The UI stores the token in `localStorage` and attaches it to admin API calls.
-- If you change the admin credentials, re-run `npm run seed` or update the user in DB.
-
-## Quick Start (Docker)
-
-```bash
-docker compose up --build
-```
-
-Once the containers are up, seed the database:
-
-```bash
-docker compose exec api npm run seed
-```
-
-## Default Demo User
-
-- Email: `demo@eshop.com`
-- Password: `password123`
-
-## Admin Panel
-
-The admin UI is embedded and served by NestJS:
-
-- URL: `http://localhost:4000/admin`
-- Default admin (from `.env`):
-  - Email: `admin@eshop.com`
-  - Password: `admin123`
-
-## API Endpoints (Matching Mobile App)
-
+### Customer API
 - `POST /authentication/local/sign-up`
 - `POST /authentication/local/sign-in`
 - `GET /categories`
-- `GET /products?keyword=&pageSize=&page=&categories=[...]`
-- `POST /carts` (Bearer token)
-- `POST /carts/sync` (Bearer token)
-- `GET /delivery-info` (Bearer token)
-- `POST /users/delivery-info` (Bearer token)
-- `PUT /users/delivery-info` (Bearer token)
-- `GET /orders` (Bearer token)
-- `POST /orders` (Bearer token)
+- `GET /products`
+- `GET /settings/contact` (Dynamic payment numbers)
+- `GET /orders` (Bearer Token)
+- `POST /orders/checkout` (Bearer Token)
 
-## Admin API Endpoints
-
+### Admin API
 - `POST /admin/auth/sign-in`
-- `GET /admin/summary` (Bearer admin token)
-- `GET /admin/products` (Bearer admin token)
-- `POST /admin/products` (Bearer admin token)
-- `PUT /admin/products/:id` (Bearer admin token)
-- `DELETE /admin/products/:id` (Bearer admin token)
-- `GET /admin/categories` (Bearer admin token)
-- `POST /admin/categories` (Bearer admin token)
-- `PUT /admin/categories/:id` (Bearer admin token)
-- `DELETE /admin/categories/:id` (Bearer admin token)
-- `GET /admin/orders` (Bearer admin token)
-- `PUT /admin/orders/:id/status` (Bearer admin token)
-- `GET /admin/users` (Bearer admin token)
-- `PUT /admin/users/:id/role` (Bearer admin token)
+- `GET /admin/summary`
+- `GET /admin/settings`
+- `PUT /admin/settings`
+- `PUT /admin/orders/:id/status`
 
-## Mobile App Base URL
-
-Update the Flutter base URL in `Flutter-TDD-Clean-Architecture-E-Commerce-App/lib/core/constant/strings.dart` to point to your backend, for example:
-
-- `http://localhost:4000` (emulator)
-- `http://<your-lan-ip>:4000` (physical device)
-
-## Notes
-
-- The backend uses TypeORM with `DB_SYNC=true` by default for fast local iteration. Disable it in production.
+---
+Developed for the **Click Shop** E-Commerce Ecosystem.
