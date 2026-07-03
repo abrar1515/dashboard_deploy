@@ -13,14 +13,14 @@ export class DeliveryInfoDto {
   @IsNotEmpty()
   addressLineOne: string;
 
-  @IsNotEmpty()
-  addressLineTwo: string;
+  @IsOptional()
+  addressLineTwo?: string;
 
   @IsNotEmpty()
   city: string;
 
-  @IsNotEmpty()
-  zipCode: string;
+  @IsOptional()
+  zipCode?: string;
 
   @IsNotEmpty()
   contactNumber: string;
