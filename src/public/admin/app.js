@@ -534,12 +534,20 @@ const deleteCategory = async (id) => {
 };
 
 const updateOrderStatus = async (id, status) => {
+  const statusLabel = ORDER_STATUS.find(s => s.value === Number(status))?.label || 'status';
+  if (statusLabel === 'Deleted') {
+    if (!confirm('Are you sure you want to delete this order? This action will mark the order as deleted.')) {
+      await loadOrders(); // Reset select to original status
+      return;
+    }
+  }
+
   try {
     await request(`/admin/orders/${id}/status`, {
       method: 'PUT',
       body: { orderStatus: Number(status) },
     });
-    showToast('Order status updated.');
+    showToast(`Order status updated to ${statusLabel}.`);
     await loadOrders();
   } catch (error) {
     showToast(error.message, 'error');

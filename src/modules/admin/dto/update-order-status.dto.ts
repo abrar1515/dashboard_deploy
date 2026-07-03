@@ -5,6 +5,6 @@ export class UpdateOrderStatusDto {
   @IsNumber()
   @Type(() => Number)
   @Min(0)
-  @Max(3)
+  @Max(4)
   orderStatus: number;
 }

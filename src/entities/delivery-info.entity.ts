@@ -26,13 +26,13 @@ export class DeliveryInfo {
   @Column({ type: 'varchar', length: 255 })
   addressLineOne: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   addressLineTwo: string;
 
   @Column({ type: 'varchar', length: 120 })
   city: string;
 
-  @Column({ type: 'varchar', length: 40 })
+  @Column({ type: 'varchar', length: 40, nullable: true })
   zipCode: string;
 
   @Column({ type: 'varchar', length: 40 })
