@@ -36,7 +36,7 @@ const headsetImages = [
 const dataSource = new DataSource({
   type: 'postgres',
   //host: process.env.DB_HOST ?? 'localhost',
-  url: 'postgresql://postgres:xALOkzHoSMIpRJlxHlQSpIKlhxhgeywh@zephyr.proxy.rlwy.net:18764/railway',
+  url: 'postgresql://postgres:KZPCzOdeceNFsMIhLiFFTMwtaYOawSLg@postgres.railway.internal:5432/railway',
   //ssl:{rejectUnauthorized: false},
   port: Number(process.env.DB_PORT ?? '5432'),
   username: process.env.DB_USER ?? 'postgres',
