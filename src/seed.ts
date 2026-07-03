@@ -178,7 +178,9 @@ async function seed() {
         firstName: 'Demo',
         lastName: 'User',
         addressLineOne: '123 Main St',
+        addressLineTwo: '',
         city: 'Karachi',
+        zipCode: '75500',
         contactNumber: '03001234567',
       });
       deliveryInfo = await deliveryInfoRepository.save(newDeliveryInfo);
